@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: oklch(96% 0.012 90); }
+    a { color: oklch(30% 0.05 150); }
+    a:hover { color: oklch(24% 0.05 150); }
+    ::placeholder { color: oklch(55% 0.02 90); opacity: 1; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</helmet>
+
+<div style="min-height:100vh; background:oklch(96% 0.012 90); font-family:'EB Garamond',serif;">
+
+  <div style="position:relative; height:min(84vh, 620px); min-height:400px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;">
+    <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="hero-image" placeholder="Drop hero: solitary figure reading at dawn, duotone forest green" style="position:absolute; inset:0;" hint-size="100%,100%"></x-import>
+    <div style="position:relative; padding:0 clamp(20px,5vw,64px) clamp(28px,5vw,56px); pointer-events:none;">
+      <h1 style="margin:0; font-weight:600; font-size:clamp(34px, 6vw, 64px); color:oklch(97% 0.01 90); letter-spacing:0.01em; text-shadow:0 2px 16px oklch(0% 0 0 / 0.45);">The Stronghold</h1>
+      <p style="margin:10px 0 0; font-size:clamp(14px, 1.6vw, 18px); color:oklch(92% 0.02 90); letter-spacing:0.04em; text-transform:uppercase; text-shadow:0 1px 8px oklch(0% 0 0 / 0.45);">A community for those who seek to live at their best</p>
+    </div>
+  </div>
+
+  <div style="max-width:680px; margin:0 auto; padding:clamp(48px,8vw,88px) clamp(20px,6vw,24px) clamp(64px,10vw,96px); display:flex; flex-direction:column;">
+
+    <blockquote style="margin:0 0 22px; font-style:italic; font-size:clamp(18px, 2.4vw, 21px); line-height:1.6; color:oklch(28% 0.03 150);">
+      "In this depraved century—when society is overcome with laziness, existential ennui and disbelief, when everywhere a bizarre mixture of hatred of life and fear of death reigns, when the best people sit idle, justifying their laziness and debauchery by their lack of clear life objectives—inspired souls are as necessary as the sun. These personalities are living evidence that in society there are still people of a higher order, people of heroic deeds, faith, and clearly defined objectives."
+    </blockquote>
+    <p style="margin:0 0 clamp(48px,8vw,64px); font-size:15px; color:oklch(45% 0.03 150); letter-spacing:0.02em;">— Anton Chekhov</p>
+
+    
+
+    <div style="border-top:1px solid oklch(78% 0.02 90); padding-top:clamp(28px,5vw,36px);">
+      <p style="margin: 0 0 6px; font-family: EB Garamond; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: oklch(45% 0.03 150)">Weekly Newsletter</p>
+      <p style="margin:0 0 20px; font-size:16px; color:oklch(38% 0.02 150); line-height:1.5;">Reflections written by a member of the community — sent once a week.</p>
+
+      <sc-if value="{{ submitted }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:0; font-style:italic; font-size:17px; color:oklch(30% 0.05 150);">Thank you — check your inbox to confirm.</p>
+      </sc-if>
+      <sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
+        <form onSubmit="{{ handleSubmit }}" style="display:flex; gap:10px; flex-wrap:wrap;">
+          <input type="email" required="{{ true }}" value="{{ email }}" onChange="{{ handleEmailChange }}" placeholder="Your email address" style="flex:1; min-width:200px; font-family:'EB Garamond',serif; font-size:16px; padding:13px 15px; border:1px solid oklch(70% 0.02 90); background:oklch(98% 0.008 90); color:oklch(24% 0.03 150);">
+          <button type="submit" style="font-family:'EB Garamond',serif; font-weight:600; font-size:15px; letter-spacing:0.03em; padding:13px 28px; background:oklch(30% 0.05 150); color:oklch(97% 0.01 90); border:none; cursor:pointer;">Sign up</button>
+        </form>
+      </sc-if>
+    </div>
+
+  </div>
+
+  <div style="padding:24px clamp(20px,6vw,24px) 40px; max-width:680px; margin:0 auto; text-align:left;">
+    <p style="margin:0; font-size:12px; letter-spacing:0.04em; color:oklch(50% 0.02 90);">© The Stronghold 2026</p>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { email: '', submitted: false };
+  renderVals() {
+    return {
+      email: this.state.email,
+      submitted: this.state.submitted,
+      notSubmitted: !this.state.submitted,
+      handleEmailChange: (e) => this.setState({ email: e.target.value }),
+      handleSubmit: (e) => {
+        e.preventDefault();
+        if (this.state.email.trim()) this.setState({ submitted: true });
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>
