@@ -21,8 +21,9 @@
 
 <div style="min-height:100vh; background:oklch(96% 0.012 90); font-family:'EB Garamond',serif;">
 
-  <div style="position:relative; height:min(84vh, 620px); min-height:400px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;">
+  <div style="position:relative; height:min(90vh, 760px); min-height:460px; display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;">
     <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="hero-image" placeholder="Drop hero: solitary figure reading at dawn, duotone forest green" style="position:absolute; inset:0;" hint-size="100%,100%"></x-import>
+    <div style="position:absolute; inset:0; background:linear-gradient(to top, oklch(0% 0 0 / 0.6), oklch(0% 0 0 / 0.2) 40%, oklch(0% 0 0 / 0) 65%); pointer-events:none;"></div>
     <div style="position:relative; padding:0 clamp(20px,5vw,64px) clamp(28px,5vw,56px); pointer-events:none;">
       <h1 style="margin:0; font-weight:600; font-size:clamp(34px, 6vw, 64px); color:oklch(97% 0.01 90); letter-spacing:0.01em; text-shadow:0 2px 16px oklch(0% 0 0 / 0.45);">The Stronghold</h1>
       <p style="margin:10px 0 0; font-size:clamp(14px, 1.6vw, 18px); color:oklch(92% 0.02 90); letter-spacing:0.04em; text-transform:uppercase; text-shadow:0 1px 8px oklch(0% 0 0 / 0.45);">A community for those who seek to live at their best</p>
@@ -48,8 +49,11 @@
       <sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
         <form onSubmit="{{ handleSubmit }}" style="display:flex; gap:10px; flex-wrap:wrap;">
           <input type="email" required="{{ true }}" value="{{ email }}" onChange="{{ handleEmailChange }}" placeholder="Your email address" style="flex:1; min-width:200px; font-family:'EB Garamond',serif; font-size:16px; padding:13px 15px; border:1px solid oklch(70% 0.02 90); background:oklch(98% 0.008 90); color:oklch(24% 0.03 150);">
-          <button type="submit" style="font-family:'EB Garamond',serif; font-weight:600; font-size:15px; letter-spacing:0.03em; padding:13px 28px; background:oklch(30% 0.05 150); color:oklch(97% 0.01 90); border:none; cursor:pointer;">Sign up</button>
+          <button type="submit" disabled="{{ submitting }}" style="font-family:'EB Garamond',serif; font-weight:600; font-size:15px; letter-spacing:0.03em; padding:13px 28px; background:oklch(30% 0.05 150); color:oklch(97% 0.01 90); border:none; cursor:pointer;">Sign up</button>
         </form>
+        <sc-if value="{{ error }}" hint-placeholder-val="{{ '' }}">
+          <p style="margin:10px 0 0; font-size:14px; color:oklch(45% 0.15 30);">{{ error }}</p>
+        </sc-if>
       </sc-if>
     </div>
 
@@ -63,16 +67,31 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { email: '', submitted: false };
+  state = { email: '', submitted: false, submitting: false, error: '' };
   renderVals() {
     return {
       email: this.state.email,
       submitted: this.state.submitted,
       notSubmitted: !this.state.submitted,
-      handleEmailChange: (e) => this.setState({ email: e.target.value }),
-      handleSubmit: (e) => {
+      submitting: this.state.submitting,
+      error: this.state.error,
+      handleEmailChange: (e) => this.setState({ email: e.target.value, error: '' }),
+      handleSubmit: async (e) => {
         e.preventDefault();
-        if (this.state.email.trim()) this.setState({ submitted: true });
+        const email = this.state.email.trim();
+        if (!email || this.state.submitting) return;
+        this.setState({ submitting: true, error: '' });
+        try {
+          const res = await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Something went wrong');
+          this.setState({ submitted: true, submitting: false });
+        } catch (err) {
+          this.setState({ submitting: false, error: err.message || 'Something went wrong. Please try again.' });
+        }
       },
     };
   }
