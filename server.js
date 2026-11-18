@@ -7,8 +7,31 @@ const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
 const SUBSCRIBERS_FILE = path.join(DATA_DIR, 'subscribers.json');
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Only these files are served; anything else in the folder (.env, .private/,
+// .git/, subscribers.json, node_modules/, the server's own source) gets a 404.
+// .image-slots.state.json is the one hidden file the page needs: image-slot.js
+// fetches it for the hero image.
+const PUBLIC_FILES = new Set([
+  'The Stronghold.dc.html',
+  'index.html',
+  'support.js',
+  'image-slot.js',
+  '.image-slots.state.json',
+  'Bird Formation.png',
+  'The Stronghold screenshot.webp',
+]);
+const serveStatic = express.static(__dirname, { dotfiles: 'allow', index: false, redirect: false });
+
+function isPublicFile(urlPath) {
+  try {
+    return PUBLIC_FILES.has(decodeURIComponent(urlPath).slice(1));
+  } catch {
+    return false;
+  }
+}
+
 app.use(express.json());
-app.use(express.static(__dirname, { dotfiles: 'allow', index: false }));
+app.use((req, res, next) => (isPublicFile(req.path) ? serveStatic(req, res, next) : next()));
 
 async function readSubscribers() {
   try {
